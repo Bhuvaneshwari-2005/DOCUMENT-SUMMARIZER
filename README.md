@@ -25,8 +25,8 @@ A sophisticated Retrieval-Augmented Generation (RAG) system that allows users to
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/document-summarizer.git
-   cd document-summarizer
+   git https://github.com/Bhuvaneshwari-2005/DOCUMENT-SUMMARIZER.git
+   cd DOCUMENT-SUMMARIZER
    ```
 
 2. **Install dependencies**:
