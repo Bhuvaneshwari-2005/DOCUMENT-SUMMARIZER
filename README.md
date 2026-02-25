@@ -57,3 +57,23 @@ A sophisticated Retrieval-Augmented Generation (RAG) system that allows users to
 ---
 &copy; 2026 AI Assistant.  
 All rights reserved by **BHUVANESHWARI PASHAM**.
+
+## License
+
+© 2026 BHUVANESHWARI PASHAM. All Rights Reserved.
+
+This software and its source code are proprietary and confidential.
+
+No part of this project may be copied, reproduced, distributed, modified, sublicensed, published, or used in any form without prior written permission from the author.
+
+Access to the source code may be granted upon formal request at the sole discretion of the author.
+
+Unauthorized use, duplication, or distribution of this software may result in legal action.
+
+## Contact
+
+If you are interested in accessing, collaborating, or learning more about this project, please contact:
+
+📧 bhuvanamudhiraj20@gmail.com
+
+
