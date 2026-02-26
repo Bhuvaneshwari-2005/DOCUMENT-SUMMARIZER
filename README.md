@@ -1,7 +1,10 @@
-# DOCUMENT-SUMMARIZER
-A sophisticated Retrieval-Augmented Generation (RAG) system that allows users to upload documents and interact with them using advanced AI. Built with Flask, ChromaDB, and Groq's Llama-3 models.
+# 📄 DOCUMENT SUMMARIZER
 
-## Key Features
+A sophisticated **Retrieval-Augmented Generation (RAG)** system that allows users to upload documents and interact with them using advanced AI. Built with **Flask**, **ChromaDB**, and **Groq's Llama-3** models.
+
+---
+
+## 🚀 Key Features
 
 - **Advanced 3-Column Dashboard**: A professional, rebalanced layout featuring navigation, a central workspace for document management, and an expansive AI assistant panel.
 - **Multi-Format Support**: Upload and index PDF, DOCX, PPTX, and TXT files seamlessly.
@@ -13,7 +16,9 @@ A sophisticated Retrieval-Augmented Generation (RAG) system that allows users to
 - **Comprehensive Summaries**: Generate detailed document summaries with a single click.
 - **Professional UI**: Polished Dark and Light themes with optimized contrast and modern depth effects.
 
-## Tech Stack
+---
+
+## 🛠️ Tech Stack
 
 - **Backend**: Python, Flask
 - **Vector Database**: ChromaDB
@@ -21,11 +26,32 @@ A sophisticated Retrieval-Augmented Generation (RAG) system that allows users to
 - **Embeddings**: Sentence-Transformers (all-MiniLM-L6-v2)
 - **Frontend**: HTML5, CSS3 (Modern Flexbox/Grid), Vanilla JavaScript
 
-## Installation
+---
+
+## 📂 Project Structure
+
+```text
+DOCUMENT-SUMMARIZER/
+├── chroma_db/          # Vector database storage (ChromaDB)
+├── static/             # Static assets
+│   ├── style.css       # Main professional stylesheet
+│   └── extracted_images/ # Storage for images extracted from documents
+├── templates/          # HTML templates
+│   └── index.html      # Main UI dashboard
+├── app.py              # Core logic, RAG implementation, and API routes
+├── run_app.py          # Application entry point script
+├── requirements.txt    # List of Python dependencies
+├── .env                # Environment configuration (API Keys)
+└── README.md           # Project documentation
+```
+
+---
+
+## ⚙️ Installation
 
 1. **Clone the repository**:
    ```bash
-   git https://github.com/Bhuvaneshwari-2005/DOCUMENT-SUMMARIZER.git
+   git clone https://github.com/Bhuvaneshwari-2005/DOCUMENT-SUMMARIZER.git
    cd DOCUMENT-SUMMARIZER
    ```
 
@@ -46,7 +72,9 @@ A sophisticated Retrieval-Augmented Generation (RAG) system that allows users to
    python run_app.py
    ```
 
-## Usage
+---
+
+## 💡 Usage
 
 1. **Upload**: Use the compact upload zone to add documents to your Knowledge Base.
 2. **Search**: Filter through your document list using the search bar in the center workspace.
@@ -55,25 +83,19 @@ A sophisticated Retrieval-Augmented Generation (RAG) system that allows users to
 5. **Summarize**: Generate and view document summaries directly from the sidebar.
 
 ---
-&copy; 2026 AI Assistant.  
-All rights reserved by **BHUVANESHWARI PASHAM**.
 
-## License
+## ⚖️ License
 
-© 2026 BHUVANESHWARI PASHAM. All Rights Reserved.
+© 2026 **BHUVANESHWARI PASHAM**. All Rights Reserved.
 
-This software and its source code are proprietary and confidential.
+This software and its source code are proprietary and confidential. No part of this project may be copied, reproduced, distributed, modified, sublicensed, published, or used in any form without prior written permission from the author. Unauthorized use, duplication, or distribution of this software may result in legal action.
 
-No part of this project may be copied, reproduced, distributed, modified, sublicensed, published, or used in any form without prior written permission from the author.
+---
 
-Access to the source code may be granted upon formal request at the sole discretion of the author.
-
-Unauthorized use, duplication, or distribution of this software may result in legal action.
-
-## Contact
+## 📧 Contact
 
 If you are interested in accessing, collaborating, or learning more about this project, please contact:
+📩 **bhuvanamudhiraj20@gmail.com**
 
-📧 bhuvanamudhiraj20@gmail.com
-
-
+---
+&copy; 2026 AI Assistant. All rights reserved by **BHUVANESHWARI PASHAM**.
