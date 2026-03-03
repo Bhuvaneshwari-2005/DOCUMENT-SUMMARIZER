@@ -1,0 +1,12 @@
+flask # Web framework for the application
+chromadb # Vector database for document storage and retrieval
+sentence-transformers # Text embedding model for semantic search
+pypdf # PDF file text extraction
+python-docx # Microsoft Word (.docx) file text extraction
+python-pptx # Microsoft PowerPoint (.pptx) file text extraction
+olefile # Support for reading legacy OLE2 files (like .ppt)
+groq # Client for Groq API to perform LLM inference
+python-dotenv # Support for .env environment variables
+zeroconf # mDNS broadcasting for professional intranet URLs
+pytesseract # OCR for extracting text from images and handwritten PDFs
+pdf2image # Convert PDF pages to PIL images for OCR processing

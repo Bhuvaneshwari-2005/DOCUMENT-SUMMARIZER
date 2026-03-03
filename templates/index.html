@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOCUMENT SUMMARIZER</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: false, theme: 'default' });
+  </script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- Sidebar: Left Navigation -->
+    <aside class="sidebar-left">
+      <div class="sidebar-header">
+        <div class="logo">
+          <i class="fas fa-brain"></i>
+          <span>DOCUMENT SUMMARIZER</span>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="section-title">WORKSPACE</div>
+        <nav class="nav-links">
+          <a href="#" class="nav-link active"><i class="fas fa-home"></i> Home</a>
+        </nav>
+      </div>
+      <div class="sidebar-section">
+        <div class="section-title">PROJECTS</div>
+        <nav class="nav-links">
+          <a href="#" class="nav-link"><i class="fas fa-database"></i> Knowledge Base</a>
+          <a href="#" class="nav-link" onclick="summary()"><i class="fas fa-sparkles"></i> New Summary</a>
+        </nav>
+        <div id="summaryList" class="summary-list-sidebar">
+           <p id="noSummaries" class="empty-text" style="display:none;">No summaries yet.</p>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="section-title">CHAT HISTORY</div>
+        <div class="search-wrapper chat-search-sidebar">
+          <i class="fas fa-search"></i>
+          <input type="text" id="chatSearch" placeholder="Search chats..." onkeyup="filterChats()">
+        </div>
+        <div id="chatHistoryList" class="summary-list-sidebar">
+           <p id="noChats" class="empty-text">No previous chats.</p>
+        </div>
+      </div>
+      <div class="sidebar-footer-actions">
+          <button onclick="toggle()" class="footer-btn" title="Toggle Theme">
+            <i class="fas fa-adjust"></i>
+          </button>
+          <button onclick="clearAll()" class="footer-btn danger" title="Clear All">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+      </div>
+    </aside>
+
+    <!-- Main Content: Upload & KB (Middle - now Narrow) -->
+    <main class="main-workspace">
+      <div class="workspace-container">
+        <header class="workspace-header">
+          <h1>Upload Knowledge</h1>
+          <p>Upload documents to train your AI.</p>
+        </header>
+
+        <div class="upload-zone-large" id="dropZone">
+          <div class="upload-icon-wrapper">
+             <i class="fas fa-cloud-upload-alt"></i>
+          </div>
+          <h2>Upload</h2>
+          <p>PDF, DOCX, TXT, PPTX</p>
+          <input type="file" id="files" multiple hidden accept=".pdf,.docx,.txt,.pptx,.ppt">
+        </div>
+
+        <section class="kb-section">
+          <div class="kb-header">
+            <h2>Knowledge Base</h2>
+            <div class="search-wrapper">
+              <i class="fas fa-search"></i>
+              <input type="text" id="kbSearch" placeholder="Search..." onkeyup="filterFiles()">
+            </div>
+          </div>
+          <div id="fileList" class="file-grid"></div>
+        </section>
+
+        <footer class="app-footer">
+          <div class="footer-content">
+             <div class="copyright">
+               &copy; 2025 AI Assistant.<br>
+               All rights reserved by <strong>BHUVANESHWARI PASHAM</strong>.
+             </div>
+          </div>
+        </footer>
+      </div>
+    </main>
+
+    <!-- Chat Area Right (Wide) -->
+    <aside class="chat-sidebar">
+      <header class="chat-sidebar-header">
+        <div class="ai-status">
+          <span class="status-indicator online"></span>
+          <div class="ai-info">
+            <span class="ai-name">AI Assistant</span>
+            <span class="ai-mode" id="currentStatus">RAG Active</span>
+          </div>
+        </div>
+        <button onclick="createNewChat()" class="new-chat-btn" title="New Chat">
+          <i class="fas fa-plus"></i> New Chat
+        </button>
+      </header>
+
+      <div id="chat" class="chat-messages">
+        <div class="welcome-screen" id="welcomeScreen">
+          <div class="welcome-msg-card">
+            Hello! I'm ready to answer questions about your knowledge base. Upload a document to get started.
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="input-wrapper">
+          <button onclick="voice()" class="input-action-btn" id="voiceBtn" title="Voice Input">
+            <i class="fas fa-microphone"></i>
+            <div class="pulse-container">
+              <div class="pulse-ring"></div>
+              <div class="pulse-dot"></div>
+            </div>
+          </button>
+          <input type="text" id="q" placeholder="Ask a question about your documents..." autocomplete="off">
+          <button onclick="ask()" class="input-send-btn" id="sendBtn">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Modals -->
+  <div id="summaryModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Summarize Document</h3>
+        <button onclick="closeModal()" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Select a file to generate a comprehensive summary.</p>
+        <select id="fileSelect"></select>
+      </div>
+      <div class="modal-footer">
+        <button onclick="confirmSummary()" class="btn btn-primary">Generate Summary</button>
+        <button onclick="closeModal()" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirmModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header danger">
+        <h3>Clear All Data</h3>
+        <button onclick="closeConfirm()" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to clear all indexed documents? This action is permanent and cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button onclick="executeClear()" class="btn btn-danger">Clear Everything</button>
+        <button onclick="closeConfirm()" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="deleteChatModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header danger">
+        <h3>Delete Chat</h3>
+        <button onclick="closeDeleteModal()" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this chat? This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
+        <button onclick="closeDeleteModal()" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="alertModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="alertTitle">Notification</h3>
+        <button onclick="closeAlert()" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="alertMessage"></p>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeAlert()" class="btn btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const chat = document.getElementById("chat");
+    const welcomeScreen = document.getElementById("welcomeScreen");
+    const files = document.getElementById("files");
+    const zone = document.getElementById("dropZone");
+    const fileList = document.getElementById("fileList");
+    const qInput = document.getElementById("q");
+    const voiceBtn = document.getElementById("voiceBtn");
+    const sendBtn = document.getElementById("sendBtn");
+    const statusText = document.getElementById("currentStatus");
+    let messageHistory = [];
+    let currentSessionId = null;
+
+    function setLoading(isLoading) {
+      qInput.disabled = isLoading;
+      voiceBtn.disabled = isLoading;
+      sendBtn.disabled = isLoading;
+      statusText.textContent = isLoading ? "Thinking..." : "RAG Active";
+      qInput.placeholder = isLoading ? "Processing query..." : "Ask a question about your documents...";
+      
+      if (isLoading) {
+        sendBtn.style.opacity = "0.6";
+        sendBtn.style.cursor = "not-allowed";
+      } else {
+        sendBtn.style.opacity = "1";
+        sendBtn.style.cursor = "pointer";
+      }
+    }
+
+    function showAlert(title, message) {
+      document.getElementById("alertTitle").textContent = title;
+      document.getElementById("alertMessage").textContent = message;
+      document.getElementById("alertModal").style.display = "flex";
+    }
+
+    function closeAlert() {
+      document.getElementById("alertModal").style.display = "none";
+    }
+
+    zone.onclick = () => files.click();
+    zone.ondragover = e => {
+      e.preventDefault();
+      zone.classList.add("dragging");
+    };
+    zone.ondragleave = () => {
+      zone.classList.remove("dragging");
+    };
+    zone.ondrop = e => {
+      e.preventDefault();
+      zone.classList.remove("dragging");
+      handleFiles(e.dataTransfer.files);
+    };
+    files.onchange = () => handleFiles(files.files);
+
+    qInput.onkeydown = e => {
+      if (e.key === 'Enter') ask();
+    };
+
+    document.getElementById("fileSelect").onkeydown = e => {
+      if (e.key === 'Enter') confirmSummary();
+    };
+
+    function handleFiles(fs) {
+      const divs = {};
+      [...fs].forEach(f => {
+        const div = document.createElement("div");
+        div.className = "file-item-modern";
+        
+        let icon = "fa-file-alt";
+        const ext = f.name.toLowerCase().split('.').pop();
+        if (ext === 'pdf') icon = "fa-file-pdf";
+        else if (ext === 'docx' || ext === 'doc') icon = "fa-file-word";
+        else if (ext === 'pptx' || ext === 'ppt') icon = "fa-file-powerpoint";
+        else if (ext === 'txt') icon = "fa-file-lines";
+
+        div.innerHTML = `
+          <div class="file-icon"><i class="fas ${icon}"></i></div>
+          <div class="file-info">
+            <span class="file-name">${f.name}</span>
+            <span class="status-info"><i class="fas fa-spinner fa-spin"></i> Indexing...</span>
+          </div>
+        `;
+        fileList.appendChild(div);
+        divs[f.name] = div;
+      });
+      upload(fs, divs);
+    }
+
+    function upload(fs, divs) {
+      const f = new FormData();
+      [...fs].forEach(x => f.append("files", x));
+      fetch("/upload", { method: "POST", body: f })
+        .then(r => r.json())
+        .then(d => {
+          if (d.error) {
+            Object.values(divs).forEach(div => {
+              const statusInfo = div.querySelector(".status-info");
+              statusInfo.innerHTML = `<span class="error-text">Error: ${d.error}</span>`;
+            });
+            return;
+          }
+          if (d.files) {
+            d.files.forEach(info => {
+              const div = divs[info.filename];
+              if (div) {
+                const statusInfo = div.querySelector(".status-info");
+                if (info.error) {
+                  statusInfo.innerHTML = `<span class="error-text">${info.error}</span>`;
+                } else if (info.chunks === 0) {
+                  statusInfo.innerHTML = `<span class="error-text">Empty or Unsupported</span>`;
+                } else {
+                  statusInfo.innerHTML = `<span class="success-text"><i class="fas fa-check-circle"></i> Processed</span>`;
+                }
+              }
+            });
+          }
+        })
+        .catch(e => {
+          Object.values(divs).forEach(div => {
+            const statusInfo = div.querySelector(".status-info");
+            statusInfo.innerHTML = `<span class="error-text">Upload Failed</span>`;
+          });
+        });
+    }
+
+    function addMessage(text, role, sources = null) {
+      if (welcomeScreen.style.display !== "none") {
+        welcomeScreen.style.display = "none";
+      }
+
+      const msgDiv = document.createElement("div");
+      msgDiv.className = `msg-group ${role}`;
+      
+      const avatarIcon = role === "user" ? "fa-user" : "fa-robot";
+      const roleName = role === "user" ? "You" : "Assistant";
+      
+      let content = `
+        <div class="msg-avatar"><i class="fas ${avatarIcon}"></i></div>
+        <div class="msg-content">
+          <div class="msg-role">${roleName}</div>
+      `;
+      
+      if (role === "ai") {
+        // Detect and prepare mermaid blocks to avoid being mangled by marked.parse
+        let mermaidBlocks = [];
+        let processedText = text.replace(/```mermaid\n([\s\S]*?)```/g, (match, code) => {
+          const id = "mermaid-" + Math.random().toString(36).substr(2, 9);
+          mermaidBlocks.push({ id, code: code.trim() });
+          return `<div id="${id}" class="mermaid-placeholder"></div>`;
+        });
+        
+        content += `<div class="markdown-body">${marked.parse(processedText)}</div>`;
+        content += `
+          <div class="msg-actions">
+            <button onclick="speak(this)" class="btn-msg tts-play" title="Speak/Pause">
+              <i class="fas fa-volume-up"></i>
+            </button>
+            <button onclick="stopSpeech(this)" class="btn-msg tts-stop" title="Stop Speaking" style="display:none;">
+              <i class="fas fa-stop"></i>
+            </button>
+            <button onclick="copyToClipboard(this)" class="btn-msg" title="Copy to Clipboard">
+              <i class="fas fa-copy"></i>
+            </button>
+          </div>
+        `;
+
+        // Wait for DOM to update then replace placeholders and render
+        setTimeout(() => {
+          mermaidBlocks.forEach(block => {
+            const placeholder = document.getElementById(block.id);
+            if (placeholder) {
+              const div = document.createElement('div');
+              div.className = 'mermaid';
+              div.textContent = block.code;
+              placeholder.parentNode.replaceChild(div, placeholder);
+            }
+          });
+          
+          if (mermaidBlocks.length > 0) {
+            mermaid.run({
+              nodes: msgDiv.querySelectorAll('.mermaid'),
+            });
+          }
+        }, 0);
+      } else {
+        content += `<div class="msg-text">${text}</div>`;
+      }
+
+      if (sources && sources.length > 0) {
+        const uniqueFiles = [...new Set(sources.map(s => s.file))];
+        const sourceHtml = uniqueFiles.join(", ");
+        content += `
+          <div class="msg-sources">
+            <i class="fas fa-quote-left"></i>
+            <span>Sources: ${sourceHtml}</span>
+          </div>
+        `;
+      }
+      
+      content += `</div>`;
+      msgDiv.innerHTML = content;
+      chat.appendChild(msgDiv);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function ask() {
+      const q = qInput.value.trim();
+      if (!q) return;
+      
+      addMessage(q, "user");
+      qInput.value = "";
+      setLoading(true);
+
+      fetch("/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q, history: messageHistory, session_id: currentSessionId })
+      })
+      .then(r => r.json())
+      .then(d => {
+        if (d.error) {
+          addMessage("I apologize, but I encountered an issue processing your request. Please try again.", "ai");
+        } else {
+          addMessage(d.answer, "ai", d.sources);
+          messageHistory.push({ role: "user", content: q });
+          messageHistory.push({ role: "ai", content: d.answer });
+          loadChatHistory();
+        }
+      })
+      .catch(e => addMessage("I apologize, but I encountered a connection issue. Please try again.", "ai"))
+      .finally(() => setLoading(false));
+    }
+
+    function filterFiles() {
+      const q = document.getElementById("kbSearch").value.toLowerCase();
+      const items = document.querySelectorAll(".file-item-modern");
+      items.forEach(item => {
+        const name = item.querySelector(".file-name").textContent.toLowerCase();
+        item.style.display = name.includes(q) ? "flex" : "none";
+      });
+    }
+
+    function voice() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        showAlert("Not Supported", "Speech recognition is not supported in this browser.");
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        voiceBtn.classList.add("recording");
+        statusText.textContent = "Listening...";
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        qInput.value = transcript;
+        ask();
+      };
+
+      recognition.onerror = () => {
+        voiceBtn.classList.remove("recording");
+        statusText.textContent = "RAG Active";
+      };
+
+      recognition.onend = () => {
+        voiceBtn.classList.remove("recording");
+        statusText.textContent = "RAG Active";
+      };
+
+      recognition.start();
+    }
+
+    function speak(btn) {
+      const icon = btn.querySelector('i');
+      if (window.speechSynthesis.speaking) {
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+          icon.className = 'fas fa-pause-circle';
+        } else {
+          window.speechSynthesis.pause();
+          icon.className = 'fas fa-play-circle';
+        }
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      const parent = btn.closest('.msg-content');
+      const textElement = parent.querySelector('.markdown-body') || parent.querySelector('.msg-text');
+      if (!textElement) return;
+
+      const text = textElement.innerText;
+      const utterance = new SpeechSynthesisUtterance(text);
+      const stopBtn = parent.querySelector('.tts-stop');
+
+      utterance.onstart = () => {
+        icon.className = 'fas fa-pause-circle';
+        if (stopBtn) stopBtn.style.display = 'block';
+      };
+
+      utterance.onend = () => resetTTSIcons();
+      utterance.onerror = () => resetTTSIcons();
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function stopSpeech(btn) {
+      window.speechSynthesis.cancel();
+      resetTTSIcons();
+    }
+
+    function resetTTSIcons() {
+      document.querySelectorAll('.tts-play i').forEach(i => i.className = 'fas fa-volume-up');
+      document.querySelectorAll('.tts-stop').forEach(b => b.style.display = 'none');
+    }
+
+    function copyToClipboard(btn) {
+      const parent = btn.closest('.msg-content');
+      const textElement = parent.querySelector('.markdown-body') || parent.querySelector('.msg-text');
+      if (!textElement) return;
+
+      navigator.clipboard.writeText(textElement.innerText).then(() => {
+        const icon = btn.querySelector('i');
+        const originalClass = icon.className;
+        icon.className = 'fas fa-check';
+        btn.style.background = 'var(--success)';
+        btn.style.color = 'white';
+        btn.style.transform = 'scale(1.1)';
+        
+        setTimeout(() => {
+          icon.className = originalClass;
+          btn.style.background = '';
+          btn.style.color = '';
+          btn.style.transform = '';
+        }, 2000);
+      });
+    }
+
+    function toggle() {
+      document.body.classList.toggle("dark");
+      localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
+    }
+
+    if (localStorage.getItem("theme") === "dark") {
+      document.body.classList.add("dark");
+    }
+
+    function clearAll() {
+      document.getElementById("confirmModal").style.display = "flex";
+    }
+
+    function closeConfirm() {
+      document.getElementById("confirmModal").style.display = "none";
+    }
+
+    function executeClear() {
+      fetch("/clear", { method: "POST" })
+        .then(r => r.json())
+        .then(d => {
+          closeConfirm();
+          showAlert("Success", "All documents and data have been cleared.");
+          chat.innerHTML = '';
+          chat.appendChild(welcomeScreen);
+          welcomeScreen.style.display = "flex";
+          fileList.innerHTML = "";
+          document.getElementById("summaryList").innerHTML = '<p id="noSummaries" class="empty-text">No summaries yet.</p>';
+          messageHistory = [];
+          loadChatHistory();
+          createNewChat();
+        })
+        .catch(e => showAlert("Error", e.message));
+    }
+
+    function summary() {
+      fetch("/files")
+        .then(r => r.json())
+        .then(d => {
+          const select = document.getElementById("fileSelect");
+          select.innerHTML = d.files.map(f => `<option value="${f}">${f}</option>`).join("");
+          if (d.files.length === 0) {
+            showAlert("No Files", "Please upload some documents first.");
+          } else {
+            document.getElementById("summaryModal").style.display = "flex";
+          }
+        });
+    }
+
+    function closeModal() {
+      document.getElementById("summaryModal").style.display = "none";
+    }
+
+    const summaryCache = {};
+
+    function confirmSummary() {
+      const filename = document.getElementById("fileSelect").value;
+      closeModal();
+      setLoading(true);
+      addMessage(`📄 Generating summary for **${filename}**...`, "ai");
+
+      fetch("/summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename })
+      })
+      .then(r => r.json())
+      .then(d => {
+        if (d.error) {
+          showAlert("Error", d.error);
+        } else {
+          const summaryList = document.getElementById("summaryList");
+          const noSummaries = document.getElementById("noSummaries");
+          if (noSummaries) noSummaries.remove();
+
+          const summaryId = "summary_" + Date.now();
+          summaryCache[summaryId] = d;
+
+          const card = document.createElement("div");
+          card.className = "summary-item-card";
+          card.innerHTML = `
+            <div class="summary-header">
+              <i class="fas fa-check-circle" style="color: var(--success);"></i>
+              <span>${filename}</span>
+            </div>
+            <button onclick="viewSummary('${summaryId}')" class="view-btn">View Full Summary</button>
+          `;
+          summaryList.prepend(card);
+          addMessage(`✅ Summary ready for **${filename}**. Click "View Full Summary" to read it.`, "ai");
+        }
+      })
+      .catch(e => addMessage(`Summary generation failed: ${e.message}`, "ai"))
+      .finally(() => setLoading(false));
+    }
+
+    function viewSummary(summaryId) {
+      const data = summaryCache[summaryId];
+      if (data) {
+        addMessage(data.summary, "ai", data.sources);
+      }
+    }
+
+    function createNewChat() {
+      fetch("/new_chat", { method: "POST" })
+        .then(r => r.json())
+        .then(d => {
+          currentSessionId = d.chat_id;
+          messageHistory = [];
+          qInput.value = "";
+          chat.innerHTML = '';
+          chat.appendChild(welcomeScreen);
+          welcomeScreen.style.display = "flex";
+          loadChatHistory();
+        });
+    }
+
+    function loadChatHistory() {
+      fetch("/chats")
+        .then(r => r.json())
+        .then(d => {
+          const chatList = document.getElementById("chatHistoryList");
+          if (d.chats.length === 0) {
+            chatList.innerHTML = '<p id="noChats" class="empty-text">No previous chats.</p>';
+            return;
+          }
+          
+          chatList.innerHTML = d.chats.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)).map(c => `
+            <div class="chat-history-item ${c.id === currentSessionId ? 'active' : ''}" onclick="loadChat('${c.id}')">
+              <i class="fas fa-comment-alt"></i>
+              <div class="chat-history-info">
+                <span class="chat-history-title" id="title-${c.id}">${c.title}</span>
+                <span class="chat-history-date">${new Date(c.timestamp).toLocaleDateString()}</span>
+              </div>
+              <div class="chat-item-actions">
+                <button class="chat-action-btn" onclick="startRename(event, '${c.id}', '${c.title.replace(/'/g, "\\'")}')" title="Rename">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="chat-action-btn delete" onclick="deleteChat(event, '${c.id}')" title="Delete">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          `).join("");
+        });
+    }
+
+    function loadChat(chatId) {
+      if (chatId === currentSessionId) return;
+      
+      setLoading(true);
+      fetch(`/chat/${chatId}`)
+        .then(r => r.json())
+        .then(d => {
+          currentSessionId = chatId;
+          messageHistory = [];
+          chat.innerHTML = '';
+          
+          if (d.messages.length === 0) {
+            chat.appendChild(welcomeScreen);
+            welcomeScreen.style.display = "flex";
+          } else {
+            welcomeScreen.style.display = "none";
+            d.messages.forEach(msg => {
+              addMessage(msg.content, msg.role === "ai" ? "ai" : "user", msg.sources);
+              messageHistory.push({ role: msg.role, content: msg.content });
+            });
+          }
+          loadChatHistory();
+        })
+        .finally(() => setLoading(false));
+    }
+
+    let chatToDelete = null;
+    function deleteChat(event, chatId) {
+      event.stopPropagation();
+      chatToDelete = chatId;
+      document.getElementById("deleteChatModal").style.display = "flex";
+    }
+
+    function closeDeleteModal() {
+      document.getElementById("deleteChatModal").style.display = "none";
+      chatToDelete = null;
+    }
+
+    document.getElementById("confirmDeleteBtn").onclick = () => {
+      if (!chatToDelete) return;
+      fetch(`/delete_chat/${chatToDelete}`, { method: "DELETE" })
+        .then(r => r.json())
+        .then(d => {
+          closeDeleteModal();
+          if (chatToDelete === currentSessionId) {
+            createNewChat();
+          } else {
+            loadChatHistory();
+          }
+        });
+    };
+
+    function filterChats() {
+      const q = document.getElementById("chatSearch").value.toLowerCase();
+      const items = document.querySelectorAll(".chat-history-item");
+      items.forEach(item => {
+        const title = item.querySelector(".chat-history-title").textContent.toLowerCase();
+        item.style.display = title.includes(q) ? "flex" : "none";
+      });
+    }
+
+    function startRename(event, chatId, currentTitle) {
+      event.stopPropagation();
+      const titleSpan = document.getElementById(`title-${chatId}`);
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = currentTitle;
+      input.className = "rename-input";
+      
+      input.onclick = (e) => e.stopPropagation();
+      input.onkeydown = (e) => {
+        if (e.key === "Enter") saveRename(chatId, input.value);
+        if (e.key === "Escape") loadChatHistory();
+      };
+      input.onblur = () => loadChatHistory();
+      
+      titleSpan.parentNode.replaceChild(input, titleSpan);
+      input.focus();
+      input.select();
+    }
+
+    function saveRename(chatId, newTitle) {
+      if (!newTitle.strip) newTitle = newTitle.trim();
+      if (!newTitle) return loadChatHistory();
+      
+      fetch(`/rename_chat/${chatId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: newTitle })
+      })
+      .then(r => r.json())
+      .then(d => {
+        loadChatHistory();
+      });
+    }
+
+    // Initialize
+    window.onload = () => {
+      loadChatHistory();
+      createNewChat();
+    };
+  </script>
+</body>
+</html>
